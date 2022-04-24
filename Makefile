@@ -1,2 +1,2 @@
 all:
-	g++ -g -Wall -Werror -std=c++17 *.cpp -o deque
+	g++ -g -Wall -Werror -std=c++11 *.cpp -o deque

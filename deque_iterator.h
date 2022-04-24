@@ -42,7 +42,7 @@ private:
 
   bool same_container(const DequeIterator<T>& it) const;
 
-  template <typename> friend class Deque;
+  template <typename, class> friend class Deque;
 };
 
 template <typename T> DequeIterator<T>::DequeIterator(T* container,
