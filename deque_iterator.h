@@ -52,12 +52,7 @@ DequeIterator<T>::DequeIterator(T* container,
       index_(index) {}
 
 template <typename T>
-DequeIterator<T>::DequeIterator(const DequeIterator<T>& it) {
-  container_ = it.container_;
-  capacity_ = it.capacity_;
-  size_ = it.size_;
-  front_ = it.front_;
-  index_ = it.index_;
+DequeIterator<T>::DequeIterator(const DequeIterator<T>& it):DequeIterator(it.container_, it.capacity_, it.size_, it.front_, it.index_){ 
 }
 
 template <typename T> 
