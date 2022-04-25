@@ -21,9 +21,13 @@ int main() {
   for (int i = 49; i >= 0; i--) {
     deque.push_front(i);
   }
+
   std::cout << deque << ' ' << deque.size() << ',' << deque.capacity() << std::endl;
 
   Deque<int> deque2{1, 2, 3, 4, 5};
+
+  auto t = (deque2.begin() + 1);
+  std::cout << *t << std::endl;
   std::cout << deque2 << std::endl;
 
   return 0;
