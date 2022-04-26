@@ -1,5 +1,5 @@
-#ifndef AA_DEQUE_H_
-#define AA_DEQUE_H_
+#ifndef _FDT_DEQUE_H_
+#define _FDT_DEQUE_H_
 
 #include "deque_iterator.h"
 
@@ -9,7 +9,9 @@
 #include <initializer_list>
 #include <stdexcept>
 #include <memory>
+#include <atomic>
 
+namespace fdt {
 template<typename T,  class Allocator = std::allocator<T> >
 class Deque {
 public:
@@ -55,9 +57,10 @@ public:
 private:
   T* container_;
   Allocator alloca_;
+  
   size_t capacity_;
-  size_t size_;
-  size_t front_;
+  std::atomic<size_t> size_;
+  std::atomic<size_t> front_;
 
   static const size_t DEFAULT_CAPACITY = 64;
 
@@ -69,7 +72,7 @@ private:
 };
 
 template <typename T, class Allocator> 
-Deque<T, Allocator>::Deque() : Deque(64) {}
+Deque<T, Allocator>::Deque() : Deque(DEFAULT_CAPACITY) {}
 
 template <typename T, class Allocator> 
 Deque<T, Allocator>::Deque(size_t capacity, const Allocator& alloca)
@@ -84,7 +87,7 @@ Deque<T, Allocator>::Deque(const Deque<T>& deque, const Allocator& alloca)
   for (const T& value : deque) {
     container_[i++] = value;
   }
-  size_ = deque.size_;
+  size_.store(deque.size_);
 }
 
 template <typename T, class Allocator> 
@@ -94,7 +97,7 @@ Deque<T, Allocator>::Deque(std::initializer_list<T> container, const Allocator &
   for (const T& value : container) {
     container_[i++] = value;
   }
-  size_ = container.size();
+  size_.store(container.size());
 }
 
 template <typename T, class Allocator> 
@@ -104,8 +107,8 @@ Deque<T, Allocator>::~Deque() {
 
 template <typename T, class Allocator> 
 Deque<T, Allocator>& Deque<T, Allocator>::operator=(const Deque<T, Allocator>& deque) {
-  size_ = deque.size_;
-  front_ = 0;
+  size_.store(deque.size_.load());
+  front_.store(0);
   if (capacity_ < deque.capacity_) {
     alloca_.deallocate(container_, capacity_);
     capacity_ = deque.capacity_ * 2;
@@ -120,11 +123,11 @@ Deque<T, Allocator>& Deque<T, Allocator>::operator=(const Deque<T, Allocator>& d
 
 template <typename T, class Allocator> 
 Deque<T, Allocator>& Deque<T, Allocator>::operator=(std::initializer_list<T> container) {
-  size_ = container.size();
-  front_ = 0;
-  if (capacity_ < size_) {
+  size_.store(container.size());
+  front_.store(0);
+  if (capacity_ < size_.load()) {
     alloca_.deallocate(container_, capacity_);
-    capacity_ = size_ * 2;
+    capacity_ = size_.load() * 2;
     alloca_.allocate(capacity_);
   }
   size_t i = 0;
@@ -136,30 +139,30 @@ Deque<T, Allocator>& Deque<T, Allocator>::operator=(std::initializer_list<T> con
 
 template <typename T, class Allocator> 
 void Deque<T, Allocator>::push_front(T value) {
-  front_ = (front_ - 1) % capacity_;
-  container_[front_] = value;
-  size_++;
+  front_.store((front_.load() - 1) % capacity_);
+  container_[front_.load()] = value;
+  size_.store(size_.load() + 1);
   reallocate();
 }
 
 template <typename T, class Allocator> 
 void Deque<T, Allocator>::push_back(T value) {
-  container_[(front_ + size_) % capacity_] = value;
-  size_++;
+  container_[(front_ + size_.load()) % capacity_] = value;
+  size_.store(size_.load() + 1);
   reallocate();
 }
 
 template <typename T, class Allocator> 
 void Deque<T, Allocator>::pop_front() {
   check_nonempty();
-  size_--;
-  front_ = (front_ + 1) % capacity_;
+  size_.store(size_.load() - 1);
+  front_.store((front_.load() + 1) % capacity_);
 }
 
 template <typename T, class Allocator> 
 void Deque<T, Allocator>::pop_back() {
   check_nonempty();
-  size_--;
+  size_.store(size_.load() - 1);
 }
 
 template <typename T, class Allocator> 
@@ -174,14 +177,14 @@ void Deque<T, Allocator>::erase(const DequeIterator<T>& begin, const DequeIterat
     out_of_range("begin.index_", begin.index_, ">", "end.index_", end.index_);
   }
   size_t offset = end.index_ - begin.index_;
-  if (begin.index_ + end.index_ < size_) {
+  if (begin.index_ + end.index_ < size_.load()) {
     shift_right(0, begin.index_, offset);
-    front_ = (front_ + offset) % capacity_;
+    front_.store((front_.load() + offset) % capacity_);
   }
   else {
-    shift_left(end.index_, size_, offset);
+    shift_left(end.index_, size_.load(), offset);
   }
-  size_ -= offset;
+  size_.store(size_.load() - offset);
 }
 
 template <typename T, class Allocator> 
@@ -353,14 +356,16 @@ void Deque<T, Allocator>::out_of_range(const char* id_1, size_t value_1,
   std::ostringstream out;
   out << "Deque: " << id_1 << " (which is " << value_1 << ") "
     << op << " " << id_2 << " (which is " << value_2 << ")";
-  throw std::out_of_range(out.str());
+  return;
+  // throw std::out_of_range(out.str());
 }
 
 template <typename T, class Allocator> 
 void Deque<T, Allocator>::check_nonempty() const {
   if (size_ == 0) {
-    throw std::out_of_range("Deque: cannot access element in empty deque");
+    return;
+    // throw std::out_of_range("Deque: cannot access element in empty deque");
   }
 }
-
+}
 #endif

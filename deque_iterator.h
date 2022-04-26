@@ -2,7 +2,7 @@
 #define AA_DEQUE_ITERATOR_H_
 
 #include "deque.h"
-
+namespace fdt {
 template <typename T>
 class DequeIterator {
 public:
@@ -183,5 +183,5 @@ bool DequeIterator<T>::same_container(const DequeIterator<T>& it) const {
   return container_ == it.container_ && capacity_ && it.capacity_
     && size_ == it.size_ && front_ == it.front_;
 }
-
+}
 #endif

@@ -2,6 +2,8 @@
 
 #include "deque.h"
 
+using namespace fdt;
+
 int main() {
   Deque<int> deque;
   deque.push_front(1);
