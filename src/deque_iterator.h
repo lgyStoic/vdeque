@@ -1,7 +1,9 @@
-#ifndef AA_DEQUE_ITERATOR_H_
-#define AA_DEQUE_ITERATOR_H_
+#ifndef _FDT_DEQUE_ITERATOR_H_
+#define _FDT_DEQUE_ITERATOR_H_
 
 #include "deque.h"
+#include "deque_lockfree.h"
+
 namespace fdt {
 template <typename T>
 class DequeIterator {
@@ -43,6 +45,7 @@ private:
   bool same_container(const DequeIterator<T>& it) const;
 
   template <typename, class> friend class Deque;
+  template <typename, class> friend class LockFreeDeque;
 };
 
 template <typename T>

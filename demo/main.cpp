@@ -1,8 +1,79 @@
 #include <iostream>
 
 #include <deque.h>
+#include <deque_lockfree.h>
+#include <thread>
+#include <mutex>
+#include <deque>
+#include <vector>
 
 using namespace fdt;
+
+const int ITER_TIME = 30000;
+static void deque_message_send_and_receive() {
+    fdt::LockFreeDeque<int> q;
+    std::vector<int> v;
+    std::thread th1([&]{
+        for(int i = 0; i < ITER_TIME; i++) {
+            q.push_back(i);
+        }
+    });
+    std::thread th2([&]{
+        for(int i = 0; i < ITER_TIME; i++) {
+            while(q.empty()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+            v.push_back(q.front());
+            q.pop_front();
+        }
+    });
+    th1.join();
+    th2.join();
+
+    for(int i = 0; i < ITER_TIME; i++) {
+      if(v[i] != i) {
+        std::cout << "error" << std::endl;
+        throw "lock free error";
+      }
+    }
+    std::cout << std::endl;
+}
+
+static void std_deque_message_send_and_receive() {
+    std::deque<int> q;
+    std::mutex m;
+    std::vector<int> v;
+    std::thread th1([&]{
+        for(int i = 0; i < ITER_TIME; i++) {
+            std::lock_guard<std::mutex> guard(m);
+            q.push_back(i);
+        }
+    });
+    std::thread th2([&]{
+        for(int i = 0; i < ITER_TIME; i++) {
+            while(q.empty()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            }
+            std::lock_guard<std::mutex> guard(m);
+            v.push_back(q.front());
+            q.pop_front();
+        }
+    });
+    th1.join();
+    th2.join();
+
+
+    for(int i = 0; i < ITER_TIME; i++) {
+      if(v[i] != i) {
+        std::cout << "error" << std::endl;
+        throw "lock free error";
+      }
+    }
+    std::cout << std::endl;
+}
+
+
+
 
 int main() {
   Deque<int> deque;
@@ -28,9 +99,25 @@ int main() {
 
   Deque<int> deque2{1, 2, 3, 4, 5};
 
-  auto t = (deque2.begin() + 1);
-  std::cout << *t << std::endl;
+  auto t = deque2.begin();
+
+  std::cout << deque2.capacity() << std::endl;
+  std::cout << deque2 <<std::endl;
+
+
+  deque2.insert(t, 100);
+  deque2.push_front(100);
+
+  std::cout << deque2.front() << std::endl;
+
+  for(auto &v: deque2) {
+    std::cout << v << " ";
+  }
+  std::cout << std::endl;
+
   std::cout << deque2 << std::endl;
+
+  deque_message_send_and_receive();
 
   return 0;
 }
