@@ -4,6 +4,7 @@
 #include <mutex>
 #include <thread>
 #include <chrono>
+#include <queue>
 
 const int ITER_TIME = 3000;
 
@@ -137,12 +138,12 @@ static void BM_std_queue_push_pop_front(benchmark::State& state) {
     }
 }
 
-static void BM_deque_message_send_and_receive(benchmark::State& state) {
-    fdt::LockfreeQueue<int> q(ITER_TIME);
+static void BM_queue_message_send_and_receive(benchmark::State& state) {
+    fdt::LockfreeQueue<int> q(100);
     for(auto _ : state) {
         std::thread th1([&]{
             for(int i = 0; i < ITER_TIME; i++) {
-                while(q.size() == q.capacity()) {
+                while(q.full()) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
                 q.push_back(i);
@@ -156,32 +157,36 @@ static void BM_deque_message_send_and_receive(benchmark::State& state) {
                 q.pop_front();
             }
         });
+        state.PauseTiming();
         th1.join();
         th2.join();
+        state.ResumeTiming();
     }
 }
 
 static void BM_std_deque_message_send_and_receive(benchmark::State& state) {
-    std::deque<int> q;
+    std::queue<int> q;
     std::mutex m;
     for(auto _ : state) {
         std::thread th1([&]{
             for(int i = 0; i < ITER_TIME; i++) {
                 std::lock_guard<std::mutex> guard(m);
-                q.push_back(i);
+                q.push(i);
             }
         });
         std::thread th2([&]{
             for(int i = 0; i < ITER_TIME; i++) {
+                std::lock_guard<std::mutex> guard(m);
                 while(q.empty()) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 }
-                std::lock_guard<std::mutex> guard(m);
-                q.pop_front();
+                q.pop();
             }
         });
+        state.PauseTiming();
         th1.join();
         th2.join();
+        state.ResumeTiming();
     }
 }
 
@@ -195,7 +200,7 @@ static void BM_std_deque_message_send_and_receive(benchmark::State& state) {
 // BENCHMARK(BM_std_queue_pop_front);
 // BENCHMARK(BM_queue_push_pop_front);
 // BENCHMARK(BM_std_queue_push_pop_front);
-BENCHMARK(BM_deque_message_send_and_receive);
+BENCHMARK(BM_queue_message_send_and_receive);
 BENCHMARK(BM_std_deque_message_send_and_receive);
 
 

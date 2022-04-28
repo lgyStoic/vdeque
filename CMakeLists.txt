@@ -9,7 +9,7 @@ set(SRCS src/Deque.h
     src/LockfreeQueue.h
     src/DequeIterator.h)
 
-add_library(VDEQUE INTERFACE ${SRCS})
+add_library(VDEQUE INTERFACE)
 
 target_include_directories(VDEQUE INTERFACE src)
 

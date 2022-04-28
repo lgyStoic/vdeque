@@ -6,10 +6,11 @@
 #include <mutex>
 #include <deque>
 #include <vector>
+#include <queue>
 
 using namespace fdt;
 
-const int ITER_TIME = 3000000;
+const int ITER_TIME = 30000;
 static void deque_message_send_and_receive() {
     fdt::LockfreeQueue<int> q(100);
     std::vector<int> v;
@@ -46,13 +47,13 @@ static void deque_message_send_and_receive() {
 }
 
 static void std_deque_message_send_and_receive() {
-    std::deque<int> q;
+    std::queue<int> q;
     std::mutex m;
     std::vector<int> v;
     std::thread th1([&]{
         for(int i = 0; i < ITER_TIME; i++) {
             std::lock_guard<std::mutex> guard(m);
-            q.push_back(i);
+            q.push(i);
         }
     });
     std::thread th2([&]{
@@ -61,8 +62,8 @@ static void std_deque_message_send_and_receive() {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             std::lock_guard<std::mutex> guard(m);
-            v.push_back(q.front());
-            q.pop_front();
+            v.push(q.front());
+            q.pop();
         }
     });
     th1.join();
@@ -122,8 +123,10 @@ int main() {
   std::cout << std::endl;
 
   std::cout << deque2 << std::endl;
-
-  deque_message_send_and_receive();
+  for(int i = 0; i < 1000; i++) {
+    deque_message_send_and_receive();
+  }
+  
 
   return 0;
 }
