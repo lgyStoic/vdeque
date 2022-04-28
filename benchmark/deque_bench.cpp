@@ -142,6 +142,9 @@ static void BM_deque_message_send_and_receive(benchmark::State& state) {
     for(auto _ : state) {
         std::thread th1([&]{
             for(int i = 0; i < ITER_TIME; i++) {
+                while(q.size() == q.capacity()) {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
                 q.push_back(i);
             }
         });

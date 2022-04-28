@@ -9,13 +9,17 @@
 
 using namespace fdt;
 
-const int ITER_TIME = 300000;
+const int ITER_TIME = 3000000;
 static void deque_message_send_and_receive() {
-    fdt::LockfreeQueue<int> q(ITER_TIME);
+    fdt::LockfreeQueue<int> q(100);
     std::vector<int> v;
     std::thread th1([&]{
         for(int i = 0; i < ITER_TIME; i++) {
-            q.push_back(i);
+          while(q.full()) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+          }
+          q.push_back(i);
+            
         }
     });
     std::thread th2([&]{
@@ -23,9 +27,7 @@ static void deque_message_send_and_receive() {
             while(q.empty()) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
-            
             v.push_back(q.front());
-    
             q.pop_front();
         }
     });

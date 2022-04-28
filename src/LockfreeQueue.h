@@ -42,6 +42,7 @@ public:
 
   size_t capacity() const;
   size_t size() const;
+  bool full() const;
   bool empty() const;
   std::string to_string() const;
 
@@ -269,5 +270,11 @@ void LockfreeQueue<T, Allocator>::check_nonempty() const {
     throw std::out_of_range("Deque: cannot access element in empty deque");
   }
 }
+
+template <typename T, class Allocator> 
+bool LockfreeQueue<T, Allocator>::full() const{
+  return size_.load() == capacity_;
+}
+
 }
 #endif
