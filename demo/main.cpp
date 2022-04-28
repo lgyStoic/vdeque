@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include <deque.h>
-#include <deque_lockfree.h>
+#include <Deque.h>
+#include <LockfreeQueue.h>
 #include <thread>
 #include <mutex>
 #include <deque>
@@ -9,9 +9,9 @@
 
 using namespace fdt;
 
-const int ITER_TIME = 30000;
+const int ITER_TIME = 300000;
 static void deque_message_send_and_receive() {
-    fdt::LockFreeDeque<int> q;
+    fdt::LockfreeQueue<int> q(ITER_TIME);
     std::vector<int> v;
     std::thread th1([&]{
         for(int i = 0; i < ITER_TIME; i++) {
@@ -23,15 +23,19 @@ static void deque_message_send_and_receive() {
             while(q.empty()) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
+            
             v.push_back(q.front());
+    
             q.pop_front();
         }
     });
     th1.join();
     th2.join();
 
+
     for(int i = 0; i < ITER_TIME; i++) {
       if(v[i] != i) {
+        std::cout << i << " " << v[i] << std::endl;
         std::cout << "error" << std::endl;
         throw "lock free error";
       }

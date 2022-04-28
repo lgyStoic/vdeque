@@ -1,5 +1,5 @@
 #include <benchmark/benchmark.h>
-#include <deque.h>
+#include <Deque.h>
 #include <deque>
 #include <mutex>
 #include <thread>
@@ -33,7 +33,7 @@ static void BM_std_queue_push_front(benchmark::State& state) {
 }
 
 static void BM_lockfree_queue_push_front(benchmark::State& state) {
-  fdt::LockFreeDeque<int> q;
+  fdt::LockfreeQueue<int> q;
   for (auto _ : state) {
       for (int i = 0; i < ITER_TIME; i++) {
         q.push_back(i);
@@ -69,7 +69,7 @@ static void BM_std_queue_push_back(benchmark::State& state) {
 }
 
 static void BM_lockfree_queue_push_back(benchmark::State& state) {
-  fdt::LockFreeDeque<int>  q(ITER_TIME);
+  fdt::LockfreeQueue<int>  q(ITER_TIME);
   for (auto _ : state) {
       for (int i = 0; i < ITER_TIME; i++) {
         q.push_back(i);
@@ -138,7 +138,7 @@ static void BM_std_queue_push_pop_front(benchmark::State& state) {
 }
 
 static void BM_deque_message_send_and_receive(benchmark::State& state) {
-    fdt::LockFreeDeque<int> q;
+    fdt::LockfreeQueue<int> q(ITER_TIME);
     for(auto _ : state) {
         std::thread th1([&]{
             for(int i = 0; i < ITER_TIME; i++) {
@@ -182,16 +182,16 @@ static void BM_std_deque_message_send_and_receive(benchmark::State& state) {
     }
 }
 
-BENCHMARK(BM_queue_push_front);
-BENCHMARK(BM_std_queue_push_front);
-BENCHMARK(BM_lockfree_queue_push_front);
-BENCHMARK(BM_queue_push_back);
-BENCHMARK(BM_std_queue_push_back);
-BENCHMARK(BM_lockfree_queue_push_back);
-BENCHMARK(BM_queue_pop_front);
-BENCHMARK(BM_std_queue_pop_front);
-BENCHMARK(BM_queue_push_pop_front);
-BENCHMARK(BM_std_queue_push_pop_front);
+// BENCHMARK(BM_queue_push_front);
+// BENCHMARK(BM_std_queue_push_front);
+// BENCHMARK(BM_lockfree_queue_push_front);
+// BENCHMARK(BM_queue_push_back);
+// BENCHMARK(BM_std_queue_push_back);
+// BENCHMARK(BM_lockfree_queue_push_back);
+// BENCHMARK(BM_queue_pop_front);
+// BENCHMARK(BM_std_queue_pop_front);
+// BENCHMARK(BM_queue_push_pop_front);
+// BENCHMARK(BM_std_queue_push_pop_front);
 BENCHMARK(BM_deque_message_send_and_receive);
 BENCHMARK(BM_std_deque_message_send_and_receive);
 

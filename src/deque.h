@@ -1,6 +1,6 @@
 #ifndef _FDT_DEQUE_H_
 #define _FDT_DEQUE_H_
-#include "deque_iterator.h"
+#include "DequeIterator.h"
 
 #include <string>
 #include <ostream>

@@ -5,9 +5,9 @@ set(CMAKE_CXX_STANDARD 11)
 
 project(VDEQUE)
 
-set(SRCS src/deque.h 
-    src/deque_lockfree.h
-    src/deque_iterator.h)
+set(SRCS src/Deque.h 
+    src/LockfreeQueue.h
+    src/DequeIterator.h)
 
 add_library(VDEQUE INTERFACE ${SRCS})
 

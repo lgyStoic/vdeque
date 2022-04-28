@@ -1,8 +1,8 @@
 #ifndef _FDT_DEQUE_ITERATOR_H_
 #define _FDT_DEQUE_ITERATOR_H_
 
-#include "deque.h"
-#include "deque_lockfree.h"
+#include "Deque.h"
+#include "LockfreeQueue.h"
 
 namespace fdt {
 template <typename T>
