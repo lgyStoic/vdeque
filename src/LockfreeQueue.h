@@ -171,6 +171,7 @@ template <typename T, class Allocator>
 void LockfreeQueue<T, Allocator>::clear() {
   size_.store(0);
   front_.store(0);
+  tail_.store(0);
 }
 
 template <typename T, class Allocator> 
