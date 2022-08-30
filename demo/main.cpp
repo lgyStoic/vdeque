@@ -62,7 +62,7 @@ static void std_deque_message_send_and_receive() {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
             std::lock_guard<std::mutex> guard(m);
-            v.push(q.front());
+            v.push_back(q.front());
             q.pop();
         }
     });
