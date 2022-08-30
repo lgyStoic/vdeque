@@ -17,6 +17,10 @@ add_executable(VDEQUE_DEMO demo/main.cpp)
 
 target_link_libraries(VDEQUE_DEMO VDEQUE)
 
+find_package(Threads REQUIRED)
+target_link_libraries(VDEQUE_DEMO Threads::Threads )
+
+
 set(BUILD_DEQUEBENCH ON)
 
 if (BUILD_DEQUEBENCH)
